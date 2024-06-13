@@ -1,0 +1,58 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=askarbekovajannata
+Group=www-data
+WorkingDirectory=/home/askarbekovajannata/blog_api
+ExecStart= /home/test/.cache/pypoetry/virtualenvs/p--WyNTXYw-py3.8/bin/gunicorn 
+--access-logfile - --workers 3 --bind unix:/home/askarbekovajannata/blog_api/blog_api.sock config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=askarbekovajannata
+Group=www-data
+WorkingDirectory=/home/askarbekovajannata/blog_api
+ExecStart= /home/askarbekovajannata/blog_api/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/askarbekovajannata/blog_api/blog_api.sock config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+
+server {
+    listen 80;
+    server_name 34.141.56.87;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+    location /static/ {
+        root /home/askarbekovajannata/blog_api;
+    }
+
+    location /media/ {
+        root /home/askarbekovajannata/blog_api;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/askarbekovajannata/blog_api/blog_api.sock;
+    }
+}
+
+[program:celery]
+command=/home/askarbekovajannata/.cache/pypoetry/virtualenvs/askarbekovajannata-YSN_Tx9P-py3.10/bin/celery -A config worker --loglevel=INFO
+directory=/home/askarbekovajannata/blog_api/
+user=www-data
+autostart=true
+autorestart=true
+stdout_logfile=/home/askarbekovajannata/blog_api/logs/celeryd.log
+redirect_stderr=true
